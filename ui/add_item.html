@@ -1,0 +1,47 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>The HTML5 Herald</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+
+    <link rel="stylesheet" href="css/styles.css?v=1.0">
+
+	<script src="https://api-maps.yandex.ru/2.1/?apikey=c09a03a4-45fb-4e99-b484-d6a9ef787bc8&lang=ru_RU" type="text/javascript">
+    </script>
+</head>
+
+<body>
+	<div id="map" style="width: 600px; height: 400px"></div>
+    
+	
+	<script type="text/javascript">
+    // Функция ymaps.ready() будет вызвана, когда
+    // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+    ymaps.ready(init);
+    function init(){ 
+        // Создание карты.    
+        var myMap = new ymaps.Map("map", {
+            // Координаты центра карты.
+            // Порядок по умолчанию: «широта, долгота».
+            // Чтобы не определять координаты центра карты вручную,
+            // воспользуйтесь инструментом Определение координат.
+            center: [55.76, 37.64],
+            // Уровень масштабирования. Допустимые значения:
+            // от 0 (весь мир) до 19.
+            zoom: 7
+        }, {
+        // Зададим ограниченную область прямоугольником, 
+        // примерно описывающим Санкт-Петербург.
+        restrictMapArea: [
+				[59.838,29.511],
+				[60.056,30.829]
+			]
+		});
+    }
+</script>
+</body>
+</html>

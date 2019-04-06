@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <link rel="stylesheet" href="stylesheets/blueimp-gallery/blueimp-gallery.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+            integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=c09a03a4-45fb-4e99-b484-d6a9ef787bc8&lang=ru_RU"
+            type="text/javascript"></script>
+    <script src="javascripts/json-forms.js"></script>
+    <script src="javascripts/dropzone.js"></script>
+    <script src="javascripts/service.js"></script>
+    <script src="javascripts/service/util.js"></script>
+
+    <meta charset="UTF-8">
+    <title>карта.gosapi.by</title>
+
+    <script>
+        // Variables
+        var endpoint = 'http://localhost:3000'; // http://35.204.59.90:3001 http://localhost:3000 http://finalist.by
+    </script>
+</head>
+
+<body class="container gosapi">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <a class="navbar-brand" href="#"><span>Карта</span>.<span>Гос</span><span style="color: #dc3545;">API</span></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+                <a class="nav-link" href="#">Карта</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="add_item.html">Добавить объект<span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<div id="map" style="position: absolute;top: 56px; left: 0; right: 0; bottom: 0;"/>
+
+<div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+
+<script type="text/javascript">
+
+    var color = {
+        RED: '#ED4543',
+        YELLOW: '#FFD21E',
+        GREEN: '#56DB40'
+    };
+
+    function getColor(item) {
+        if (item.height <= 3) {
+            return color.GREEN;
+        } else if (item.height <= 6) {
+            return color.YELLOW;
+        }
+        return color.RED;
+    }
+
+    function getCoordinates(item) {
+        var results = [];
+        item.coordinates.split(";").forEach(function (coordinateStr) {
+            results.push(coordinateStr.split(",").map(function (pointStr) {
+                return parseFloat(pointStr);
+            }));
+        });
+        return results;
+    }
+
+    function buildPlacemark(point, item) {
+        var layout = ymaps.templateLayoutFactory.createClass(
+            '<div class="item map-item">' +
+            '<h3>Бордюр</h3>' +
+            '<p>Высота {{properties.height}}см</p>' +
+            '<img src="{{properties.coverImg}}">' +
+            '<div class="item-more-photo">{{properties.openPhotoLabel}}</div>' +
+            '</div>', {
+            build: function () {
+                layout.superclass.build.call(this);
+
+                $('.item-more-photo').click(function () {
+                    console.log('open gallery');
+                    blueimp.Gallery(item.photos.map(function(photo) {return photo.url;}));
+                });
+            }
+        });
+
+
+        return new ymaps.Placemark(point, {
+            height: item.height,
+            preset: 'islands#circleIcon',
+            iconColor: getColor(item),
+            coverImg: item.photos[0].url,
+            openPhotoLabel: item.photos.length > 1 ? 'Ещё #{photoCount} фото'.replace('#{photoCount}', item.photos.length) : 'Открыть фото'
+        }, {
+            preset: 'islands#circleIcon',
+            iconColor: getColor(item),
+            balloonContentLayout: layout,
+            hideIconOnBalloonOpen: false
+        });
+    }
+
+    function initMap() {
+        myMap = new ymaps.Map("map", {
+            center: [52.435470, 31.007678],
+            zoom: 14, // от 0 (весь мир) до 19.
+            controls: ['zoomControl', 'fullscreenControl'] //'typeSelector',
+        });
+
+        //$(document).on('click', '.item-more-photo')
+
+        $.ajax({
+            method: 'GET',
+            url: endpoint + '/api/v1/items/',
+            dataType: 'json',
+            success: function (data) {
+                data.forEach(function (item) {
+                    console.log(data);
+
+
+                    getCoordinates(item).forEach(function (point) {
+                        var placemark = buildPlacemark(point, item);
+                        // var placemark = new ymaps.Placemark(point, {}, {
+                        //     preset: 'islands#circleIcon',
+                        //     iconColor: getColor(item)
+                        // });
+
+                        myMap.geoObjects.add(placemark);
+                    });
+                });
+            },
+            error: function () {
+                alert("Ошибка сервера");
+            }
+        });
+    }
+
+    ymaps.ready(initMap);
+</script>
+<script src="javascripts/blueimp-gallery/blueimp-gallery.min.js"></script>
+</body>
+</html>

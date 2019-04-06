@@ -1,0 +1,120 @@
+.custom-control-label::before {
+    position: absolute;
+    top: .25rem;
+    left: -1.5rem;
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    content: "";
+    background-color: #fff;
+    border: #adb5bd solid 1px;
+}
+
+
+.form-control.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.form-control.is-invalid, .was-validated .form-control:invalid, .form-control.is-valid, .was-validated .form-control:valid {
+    background-image: none !important;
+}
+
+.form-group > .bootstrap-select {
+    display: block !important;
+    width: auto !important;
+}
+
+.bootstrap-select button {
+    border: 1px solid #ced4da !important;
+    background-color: white !important;
+}
+
+.bootstrap-select .dropdown-item.selected {
+    color: #fff;
+    text-decoration: none;
+    background-color: #b68567;
+}
+
+.custom-control-input.is-valid ~ .custom-control-label::before, .was-validated .custom-control-input:valid ~ .custom-control-label::before {
+    background-color: transparent;
+}
+
+.bootstrap-select > .dropdown-toggle.bs-placeholder.bs-invalid {
+    border-color: #dc3545 !important;
+}
+
+.gosapi .dropzone {
+    border: 2px dashed;
+    border-radius: 5px;
+    background: white;
+    margin: 0 auto 16px;
+}
+
+.dropdown-menu[role="combobox"] {
+    z-index: 1050 !important;
+}
+
+#newItemForm {
+    margin-top: 64px;
+}
+
+.gosapi .was- validated .form-control:invalid ~ .invalid-feedback, .gosapi .form-control.is-invalid ~ .invalid-feedback {
+    display: none;
+}
+
+.gosapi .was- validated .form-control:invalid ~ .invalid-feedback:last-child, .gosapi .form-control.is-invalid ~ .invalid-feedback:last-child {
+    display: block;
+}
+
+label:after {
+    content:" *";
+    color: #dc3545;
+    font-weight: bolder;
+}
+
+.form-group small {
+    line-height: 1;
+}
+
+ul.help-info {
+    line-height: 12px;
+    font-size: 80%;
+    font-weight: 400;
+    padding: 10px;
+}
+
+ul.help-info li {
+    list-style-type: none;
+}
+
+.gosapi .blueimp-gallery > a {
+    color: #fff !important;
+}
+
+.gosapi .blueimp-gallery > .prev, .gosapi .blueimp-gallery > .next {
+    border: none;
+}
+
+.map-item {
+    position: relative;
+}
+
+.map-item img {
+    height: 250px;
+    width: 300px;
+    object-fit: cover;
+}
+
+.map-item .item-more-photo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    line-height: 50px;
+    cursor: pointer;
+    font-size: 19px;
+    color: #fff;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+}

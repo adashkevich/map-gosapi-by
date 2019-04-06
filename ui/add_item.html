@@ -27,11 +27,11 @@
     <script src="javascripts/service/util.js"></script>
 
     <meta charset="UTF-8">
-    <title>карта.gosapi.by</title>
+    <title>Карта</title>
 
     <script>
         // Variables
-        var endpoint = 'http://localhost:3000'; // http://35.204.59.90:3001 http://localhost:3000 http://finalist.by
+        var endpoint = 'http://35.204.59.90:3002'; // http://35.204.59.90:3001 http://localhost:3000
     </script>
 </head>
 
@@ -100,6 +100,13 @@
 
 <script type="text/javascript">
 
+    function cleanForm() {
+        $('#borderHeightInput').val('');
+        myMap.geoObjects.removeAll();
+        $('#photosUpload').get(0).dropzone.removeAllFiles(true);
+
+    }
+
     function getFormData() {
         return {
             height: $('#borderHeightInput').val(),
@@ -143,6 +150,7 @@
             data: JSON.stringify({item: formData}),
             success: function () {
                 alert("Метка успешно добавлена!");
+                cleanForm();
             },
             error: function () {
                 alert("Ошибка сервера");

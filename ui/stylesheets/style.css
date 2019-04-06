@@ -118,3 +118,16 @@ ul.help-info li {
     text-align: center;
     background: rgba(0, 0, 0, 0.5);
 }
+
+.btn.btn-circle {
+    border-radius: 50%;
+    height: 54px;
+    width: 54px;
+}
+
+#addItemBtn {
+    position: absolute;
+    right: 25px;
+    bottom: 25px;
+    z-index: 3000;
+}

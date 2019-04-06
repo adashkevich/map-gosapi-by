@@ -16,6 +16,7 @@ sudo vi /etc/profile.d/115-gosapi-by.sh (then press :esc :wq to save and exit)
 sudo chown -R root:115-bel-admin /etc/profile.d/115-gosapi-by.sh  
 sudo chmod -R g+rw /etc/profile.d/115-gosapi-by.sh  
 sudo dpkg-reconfigure tzdata
+sudo chmod -R +x /opt/gosapi/map-gosapi-by/bash/  
 
 3D-Party
 [Blueimp Gallery](https://github.com/blueimp/Gallery#controls)

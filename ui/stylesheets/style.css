@@ -123,6 +123,7 @@ ul.help-info li {
     border-radius: 50%;
     height: 54px;
     width: 54px;
+    font-size: 22px;
 }
 
 #addItemBtn {
@@ -130,4 +131,13 @@ ul.help-info li {
     right: 25px;
     bottom: 25px;
     z-index: 3000;
+}
+
+@media (max-width: 767px) {
+
+    .map-item img {
+        height: 165px;
+        width: 200px;
+        object-fit: cover;
+    }
 }

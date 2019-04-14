@@ -141,3 +141,12 @@ ul.help-info li {
         object-fit: cover;
     }
 }
+
+.map-item p {
+    margin-bottom: 0;
+    max-width: 300px;
+}
+
+.map-item p.p1 {
+    font-size: 16px;
+}

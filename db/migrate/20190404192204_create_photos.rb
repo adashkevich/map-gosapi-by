@@ -4,6 +4,8 @@ class CreatePhotos < ActiveRecord::Migration[5.1]
       t.string :url, null: false
       t.string :name, null: false
       t.integer :size, null: false
+      t.integer :original_id
+      t.string :system
 
       t.belongs_to :item, index: true
 

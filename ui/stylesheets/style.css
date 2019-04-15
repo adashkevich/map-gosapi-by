@@ -140,6 +140,10 @@ ul.help-info li {
         width: 200px;
         object-fit: cover;
     }
+
+    .map-item p {
+        max-width: 200px;
+    }
 }
 
 .map-item p {
@@ -149,4 +153,10 @@ ul.help-info li {
 
 .map-item p.p1 {
     font-size: 16px;
+}
+
+#addBorderGuide img {
+    display: block;
+    width: 100%;
+    height: auto;
 }

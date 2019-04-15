@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+          integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://rawgit.com/enyo/dropzone/master/dist/dropzone.css">
+    <link rel="stylesheet" href="stylesheets/datepicker/datepicker.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+            integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+            integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=c09a03a4-45fb-4e99-b484-d6a9ef787bc8&lang=ru_RU"
+            type="text/javascript"></script>
+    <script src="javascripts/json-forms.js"></script>
+    <script src="javascripts/dropzone.js"></script>
+    <script src="javascripts/service.js"></script>
+    <script src="javascripts/service/util.js"></script>
+    <script src="javascripts/datepicker/datepicker.js"></script>
+    <script src="javascripts/datepicker/I18n.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Карта</title>
+
+    <script>
+        // Variables
+        var endpoint = 'http://localhost:3000'; // http://35.204.59.90:3001 http://localhost:3000
+    </script>
+</head>
+
+<body class="container gosapi">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <a class="navbar-brand" href="#"><span>Карта</span>.<span>Гос</span><span style="color: #dc3545;">API</span></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+
+            <li class="nav-item">
+                <a class="nav-link" href="map.html">Карта</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="add_item.html">Добавить объект<span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+<div class="row justify-content-md-center">
+    <div class="col-lg-8">
+
+        <form id="newItemForm" class="wizard-step" novalidate>
+            <input type="hidden" name="item_type" value="tree" id="typeInput">
+            <h3>Добавить саженцы</h3>
+
+            <div class="form-group">
+                <label for="map">Местоположение</label>
+                <div id="map" style="width: 100%; height: 400px"></div>
+
+                <ul class="help-info">
+                    <li>для добавления метки нажмите на карту</li>
+                </ul>
+            </div>
+
+            <div class="form-group">
+                <label>Фото</label>
+
+                <div id="photosUpload">
+                    <div class="dz-default dz-message"><span>Нажмите сюда для загрузки фото</span></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="countInput">Количество</label>
+                <input type="number" class="form-control" id="countInput" min="0" max="1000" name="count"
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="plantDatePicker">Примерная дата посадки</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" data-toggle="datepicker" id="plantDatePicker" name="plant_date" aria-describedby="plantDatePicker">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-outline-secondary docs-datepicker-trigger" disabled="">
+                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+
+        <div id="documentsForm" style="display: none;" class="wizard-step">
+        </div>
+
+        <form style="margin: 16px auto 20px;">
+            <button type="button" class="btn btn-outline-primary" id="submitBtn">Добавить</button>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function cleanForm() {
+        $('#countInput').val('');
+        $('#plantDatePicker').val('');
+        myMap.geoObjects.removeAll();
+        $('#photosUpload').get(0).dropzone.removeAllFiles(true);
+
+    }
+
+    function getFormData() {
+        return {
+            count: $('#countInput').val(),
+            plant_date: $('#plantDatePicker').val(),
+            photos_attributes: getPhotos(),
+            coordinates: getCoordinates(),
+            item_type: $('#typeInput').val()
+        }
+    }
+
+    function getPhotos() {
+        return $('#photosUpload').get(0).dropzone.getAcceptedFiles().map(function (doc) {
+            return {url: doc.xhr.responseText, name: doc.name, size: doc.size};
+        });
+    }
+
+    function getCoordinates() {
+        var coordinates = [];
+        ymaps.geoQuery(myMap.geoObjects).each(function (geoObject) {
+            coordinates.push(geoObject.geometry.getBounds()[0]);
+        });
+        return coordinates;
+    }
+
+    function validateFormData(formData) {
+        return formData.count !== '' && formData.plant_date !== '' && formData.photos_attributes.length && formData.coordinates.length;
+    }
+    function submitForm() {
+        var formData = getFormData();
+        if(!validateFormData(formData)) {
+            alert("Не все обязательные поля заполнены");
+            return;
+        }
+
+        formData.coordinates = formData.coordinates.join(';');
+
+        $.ajax({
+            method: 'POST',
+            url: endpoint + '/api/v1/items/',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({item: formData}),
+            success: function () {
+                alert("Метка успешно добавлена!");
+                cleanForm();
+            },
+            error: function () {
+                alert("Ошибка сервера");
+            }
+        });
+    }
+
+    function initMap() {
+        $('#map').css('max-height', $('#map').width() + 'px');
+
+        myMap = new ymaps.Map("map", {
+            center: [52.435470, 31.007678],
+            zoom: 14, // от 0 (весь мир) до 19.
+            controls: ['zoomControl', 'searchControl', 'fullscreenControl'] //'typeSelector',
+        });
+
+        var placemark;
+        myMap.events.add(['click'], function (e) {
+            placemark && myMap.geoObjects.remove(placemark);
+            placemark = new ymaps.Placemark(e.get('coords'), {}, {
+                preset: 'islands#circleIcon',
+                iconColor: 'green'
+            });
+
+            myMap.geoObjects.add(placemark);
+        });
+    }
+
+    function init() {
+        ymaps.ready(initMap);
+        $('#photosUpload').dropzone({url: endpoint + '/api/v1/photos'}).addClass('dropzone');
+
+        $('[data-toggle="datepicker"]').datepicker({
+            autoHide: true,
+            startView: 2,
+            language: 'ru-RU'
+        });
+    }
+
+    function hook() {
+        $('#submitBtn').click(function () {
+            submitForm();
+        });
+    }
+    
+    $(function () {
+        init();
+        hook();
+    });
+</script>
+
+</body>
+</html>

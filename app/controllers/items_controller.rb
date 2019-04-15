@@ -5,7 +5,7 @@ class ItemsController < ApplicationController
   def index
     @items = Item.eager_load(:photos).all
 
-    render json: @items, include: {photos: {only: :url}}, except: %i[id created_at updated_at]
+    render json: @items, include: { photos: { only: :url } }, except: %i[id created_at updated_at]
   end
 
   # GET /items/1
@@ -46,6 +46,6 @@ class ItemsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def item_params
-      params.require(:item).permit(:item_type, :coordinates, :height, :count, :photos_attributes => %i[url size name])
+      params.require(:item).permit(:item_type, :coordinates, :count, :plant_date, :height, :count, :photos_attributes => %i[url size name])
     end
 end

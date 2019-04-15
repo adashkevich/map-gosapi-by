@@ -30,6 +30,20 @@
     <meta charset="UTF-8">
     <title>Карта</title>
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-138301314-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'UA-138301314-1');
+    </script>
+
     <script>
         // Variables
         var endpoint = 'http://localhost:3000'; // http://35.204.59.90:3002 http://localhost:3000
@@ -80,10 +94,11 @@
         GREEN: '#56DB40',
         BLUE: '#1E98FF',
         GRAY: '#A9A9A9',
-    };
+    },
+    _id = 1000;
 
     function getColor(item) {
-        if(!item.processed) {
+        if (!item.processed) {
             return color.BLUE;
         } else if (item.lock) {
             return color.GRAY;
@@ -105,13 +120,20 @@
         return results;
     }
 
-    function buildPlacemark(point, item) {
+    function buildMarker(point, item) {
+        switch (item.item_type) {
+            case 'border': return buildBorderMarker(point, item);
+            case 'tree': return buildTreeMarker(point, item);
+        }
+    }
+
+    function buildBorderMarker(point, item) {
         var layout = ymaps.templateLayoutFactory.createClass(
             '<div class="item map-item">' +
             '<h3>Бордюр</h3>' +
             '<p class="p1">Высота {{properties.height}}см</p>' +
             '{% if properties.problemID %}' +
-            '<p>Заявка: <a href="http://115.бел/{{properties.problemHref}}">{{properties.problemID}}</a></p>' +
+            '<p>Заявка: <a href="http://115.бел/{{properties.problemHref}}" target="_blank">{{properties.problemID}}</a></p>' +
             '{% endif %}' +
             '{% if properties.problemStatus %}' +
             '<p>Статус: {{properties.problemStatus}}</p>' +
@@ -121,14 +143,13 @@
             '{% endif %}' +
             '<img src="{{properties.coverImg}}">' +
             '{% if properties.photos.length %}' +
-                '<div class="item-more-photo">{{properties.openPhotoLabel}}</div>' +
+            '<div class="item-more-photo">{{properties.openPhotoLabel}}</div>' +
             '{% endif %}' +
             '</div>', {
                 build: function () {
                     layout.superclass.build.call(this);
 
                     $('.item-more-photo').click(function () {
-                        console.log('open gallery');
                         blueimp.Gallery(item.photos.map(function (photo) {
                             return photo.url;
                         }));
@@ -137,31 +158,105 @@
             });
 
 
-        return new ymaps.Placemark(point, {
-            height: item.height,
-            preset: 'islands#circleIcon',
-            iconColor: getColor(item),
-            coverImg: getCoverImg(item.photos),
-            openPhotoLabel: getOpenPhotoLabel(item.photos),
-            photos: item.photos,
-            problemID: item.problem_id,
-            problemHref: item.problem_href,
-            problemStatus: getStatus(item.problem_status),
-            problemAnswer: item.problem_answer,
-        }, {
-            preset: 'islands#circleIcon',
-            iconColor: getColor(item),
-            balloonContentLayout: layout,
-            hideIconOnBalloonOpen: false
-        });
+        // return new ymaps.Placemark(point, {
+        //     height: item.height,
+        //     preset: 'islands#circleIcon',
+        //     iconColor: getColor(item),
+        //     coverImg: getCoverImg(item.photos),
+        //     openPhotoLabel: getOpenPhotoLabel(item.photos),
+        //     photos: item.photos,
+        //     problemID: item.problem_id,
+        //     problemHref: item.problem_href,
+        //     problemStatus: getStatus(item.problem_status),
+        //     problemAnswer: item.problem_answer,
+        //     type: item.item_type
+        // }, {
+        //     preset: 'islands#circleIcon',
+        //     iconColor: getColor(item),
+        //     balloonContentLayout: layout,
+        //     hideIconOnBalloonOpen: false
+        // });
+
+        return {
+            type: 'Feature',
+            id: _id++,
+            geometry: {
+                type: 'Point',
+                coordinates: point
+            },
+            properties: {
+                height: item.height,
+                coverImg: getCoverImg(item.photos),
+                openPhotoLabel: getOpenPhotoLabel(item.photos),
+                photos: item.photos,
+                problemID: item.problem_id,
+                problemHref: item.problem_href,
+                problemStatus: getStatus(item.problem_status),
+                problemAnswer: item.problem_answer,
+                type: item.item_type
+            },
+            options: {
+                preset: 'islands#circleIcon',
+                iconColor: getColor(item),
+                balloonContentLayout: layout,
+                hideIconOnBalloonOpen: false
+            }
+        };
     }
 
+    function buildTreeMarker(point, item) {
+        var layout = ymaps.templateLayoutFactory.createClass(
+            '<div class="item map-item">' +
+            '<h3>Саженцы</h3>' +
+            '<p class="p1">Количество {{properties.count}} шт</p>' +
+            '<p>Дата посадки {{properties.plantDate}}</p>' +
+            '<img src="{{properties.coverImg}}">' +
+            '<div class="item-more-photo">{{properties.openPhotoLabel}}</div>' +
+            '</div>', {
+                build: function () {
+                    layout.superclass.build.call(this);
+
+                    $('.item-more-photo').click(function () {
+                        blueimp.Gallery(item.photos.map(function (photo) {
+                            return photo.url;
+                        }));
+                    });
+                }
+            });
+
+        return {
+            type: 'Feature',
+            id: _id++,
+            geometry: {
+                type: 'Point',
+                coordinates: point
+            },
+            properties: {
+                coverImg: getCoverImg(item.photos),
+                openPhotoLabel: getOpenPhotoLabel(item.photos),
+                photos: item.photos,
+                type: item.item_type,
+                count: item.count,
+                plantDate: item.plant_date,
+                iconContent: item.count,
+            },
+            options: {
+                iconColor: getColor(item),
+                balloonContentLayout: layout,
+                hideIconOnBalloonOpen: false,
+            }
+        };
+    }
     function getStatus(status) {
         switch (status) {
-            case '7': return 'НА КОНТРОЛЕ';
-            case '5': return 'РЕШЕНО';
-            case '4': return 'В РАБОТЕ';
-            default: return null;
+            case '7':
+                return 'НА КОНТРОЛЕ';
+            case '5':
+                return 'РЕШЕНО';
+            case '4':
+                return 'В РАБОТЕ';
+            default:
+                return null;
         }
     }
 
@@ -179,14 +274,61 @@
         return photos[0].url;
     }
 
+    function getFilterFunction(type) {
+        return function (obj) {
+            return type === obj.properties.type;
+        }
+    }
+
     function initMap() {
+        var dataItems = [new ymaps.control.ListBoxItem({data: {content: 'Бордюры', type: 'border'}}),
+                new ymaps.control.ListBoxItem({data: {content: 'Саженцы', type: 'tree'}})],
+            separatorCfg = {
+                options: {type: 'separator'}
+            },
+            dataControl = new ymaps.control.ListBox({
+                data: {
+                    content: 'Отображаемые данные'
+                },
+                items: [
+                    dataItems[0],
+                    new ymaps.control.ListBoxItem(separatorCfg),
+                    dataItems[1],
+                ]
+            }),
+            objectManager = new ymaps.ObjectManager();
+
         myMap = new ymaps.Map("map", {
             center: [52.435470, 31.007678],
             zoom: 14, // от 0 (весь мир) до 19.
             controls: ['zoomControl', 'fullscreenControl'] //'typeSelector',
         });
 
-        //$(document).on('click', '.item-more-photo')
+        myMap.controls.add(dataControl, {
+            floatIndex: 0
+        });
+
+        myMap.geoObjects.add(objectManager);
+
+        dataItems.forEach(function (dataItem) {
+            dataItem.events.add(['select'], function () {
+                dataItems.forEach(function (item) {
+                    if (dataItem != item) {
+                        item.deselect();
+                    }
+                });
+
+                objectManager.setFilter(getFilterFunction(dataItem.data.get('type')));
+            });
+
+            dataItem.events.add(['deselect'], function () {
+                if (!dataItems.some(function (item) {
+                    return item.isSelected();
+                })) {
+                    dataItem.select();
+                }
+            });
+        });
 
         $.ajax({
             method: 'GET',
@@ -195,13 +337,11 @@
             success: function (data) {
                 data.forEach(function (item) {
                     console.log(item);
-
-
                     getCoordinates(item).forEach(function (point) {
-                        var placemark = buildPlacemark(point, item);
-                        myMap.geoObjects.add(placemark);
+                        objectManager.add(buildMarker(point, item));
                     });
                 });
+                dataItems[0].select();
             },
             error: function () {
                 alert("Ошибка сервера");

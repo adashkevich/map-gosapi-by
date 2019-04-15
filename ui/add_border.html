@@ -49,7 +49,7 @@
                 <a class="nav-link" href="map.html">Карта</a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link" href="#">Добавить объект<span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="add_item.html">Добавить объект<span class="sr-only">(current)</span></a>
             </li>
         </ul>
     </div>
@@ -60,11 +60,33 @@
     <div class="col-lg-8">
 
         <form id="newItemForm" class="wizard-step" novalidate>
-            <h3>Добавить объекты</h3>
+            <h3>Добавить бордюр</h3>
 
-            <div style="margin-top: 20px;">
-                <a  href="add_border.html" role="button" class="btn btn-outline-primary">Бордюры</a>
-                <a  href="add_tree.html" role="button" class="btn btn-outline-primary">Саженцы</a>
+            <div style="margin-top: 20px;">Для добавления бордюра воспользуйтесь сайтом <a href="http://115.бел/" target="_blank">115.бел</a>. В течении недели ваше заявка будет перенесена на карту.</div>
+            <small>* в описании желательно указывать высоту бордюра</small><br/>
+            <br/>
+
+            <p>
+                <button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#addBorderGuide" aria-expanded="false" aria-controls="addBorderGuide">
+                    Инструкция как добавить заявку
+                </button>
+            </p>
+
+            <div class="collapse" id="addBorderGuide">
+                <div class="card card-body">
+                    <ol>
+                        <li>Нажмите на кнопку "Сообщить о проблеме". После этого,возможно, вам придётся войти или зарегистрироваться.</li>
+                        <li>Нажмите на текст "Инфраструктура города | Дороги, тротуары".</li>
+                        <li>Нажмите на текст "Неисправность/недоступность инфраструктуры для маломобильных граждан".</li>
+                        <li>Выбираете точное место на карте.</li>
+                        <li>Набираете текст: "Высота бордюра N см. Требуется занизить согласно НПА". По возможности указав примерную высоту бордюра.</li>
+                        <li>Добавляете фото</li>
+                        <li>Нажимаете кнопку "Сообщить оп проблеме"</li>
+                    </ol>
+                    <img src="images/border_example.png">
+                    <br/>
+                    <img src="images/border_example_2.png">
+                </div>
             </div>
         </form>
 

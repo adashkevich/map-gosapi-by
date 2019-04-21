@@ -160,3 +160,9 @@ ul.help-info li {
     width: 100%;
     height: auto;
 }
+
+.edit-btn {
+    font-size: 20px;
+    color: gray;
+    cursor: pointer;
+}

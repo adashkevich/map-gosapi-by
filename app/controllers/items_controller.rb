@@ -5,7 +5,7 @@ class ItemsController < ApplicationController
   def index
     @items = Item.eager_load(:photos).all
 
-    render json: @items, include: { photos: { only: :url } }, except: %i[id created_at updated_at]
+    render json: @items, include: { photos: { only: :url } }, except: %i[created_at updated_at]
   end
 
   # GET /items/1

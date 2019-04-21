@@ -94,8 +94,8 @@
         GREEN: '#56DB40',
         BLUE: '#1E98FF',
         GRAY: '#A9A9A9',
-    },
-    _id = 1000;
+    };
+    //_id = 1000;
 
     function getColor(item) {
         if (!item.processed) {
@@ -130,7 +130,7 @@
     function buildBorderMarker(point, item) {
         var layout = ymaps.templateLayoutFactory.createClass(
             '<div class="item map-item">' +
-            '<h3>Бордюр</h3>' +
+            '<h3>Бордюр <a href="edit_item.html?id={{properties.id}}" target="_blank"><i class="fas fa-edit edit-btn"></i></a></h3>' +
             '<p class="p1">Высота {{properties.height}}см</p>' +
             '{% if properties.problemID %}' +
             '<p>Заявка: <a href="http://115.бел/{{properties.problemHref}}" target="_blank">{{properties.problemID}}</a></p>' +
@@ -157,34 +157,15 @@
                 }
             });
 
-
-        // return new ymaps.Placemark(point, {
-        //     height: item.height,
-        //     preset: 'islands#circleIcon',
-        //     iconColor: getColor(item),
-        //     coverImg: getCoverImg(item.photos),
-        //     openPhotoLabel: getOpenPhotoLabel(item.photos),
-        //     photos: item.photos,
-        //     problemID: item.problem_id,
-        //     problemHref: item.problem_href,
-        //     problemStatus: getStatus(item.problem_status),
-        //     problemAnswer: item.problem_answer,
-        //     type: item.item_type
-        // }, {
-        //     preset: 'islands#circleIcon',
-        //     iconColor: getColor(item),
-        //     balloonContentLayout: layout,
-        //     hideIconOnBalloonOpen: false
-        // });
-
         return {
             type: 'Feature',
-            id: _id++,
+            id: item.id,
             geometry: {
                 type: 'Point',
                 coordinates: point
             },
             properties: {
+                id: item.id,
                 height: item.height,
                 coverImg: getCoverImg(item.photos),
                 openPhotoLabel: getOpenPhotoLabel(item.photos),
@@ -226,7 +207,7 @@
 
         return {
             type: 'Feature',
-            id: _id++,
+            id: item.id,
             geometry: {
                 type: 'Point',
                 coordinates: point

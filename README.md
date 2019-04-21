@@ -1,7 +1,7 @@
 #Server  
 
 ##Installation
-sudo mkdir /opt/gosapi/
+sudo mkdir /opt/gosapi/  
 sudo groupadd map-gosapi-admin 
 sudo usermod -a -G map-gosapi-admin andrew.daskhevich  
 git clone https://github.com/adashkevich/map-gosapi-by.git  
@@ -15,9 +15,9 @@ gem install bundler
 sudo vi /etc/profile.d/115-gosapi-by.sh (then press :esc :wq to save and exit)  
 sudo chown -R root:115-bel-admin /etc/profile.d/115-gosapi-by.sh  
 sudo chmod -R g+rw /etc/profile.d/115-gosapi-by.sh  
-sudo dpkg-reconfigure tzdata
+sudo dpkg-reconfigure tzdata  
 sudo chmod -R +x /opt/gosapi/map-gosapi-by/bash/  
 
 3D-Party
-[Blueimp Gallery](https://github.com/blueimp/Gallery#controls)
-[Yandex maps](https://tech.yandex.ru/maps/doc/jsapi/2.1/quick-start/index-docpage/)
+[Blueimp Gallery](https://github.com/blueimp/Gallery#controls)  
+[Yandex maps](https://tech.yandex.ru/maps/doc/jsapi/2.1/quick-start/index-docpage/)  

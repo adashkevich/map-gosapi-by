@@ -9,7 +9,7 @@ class GoogleCloud
       project_id: ENV['MAP_GOSAPI_GOOGLE_CLOUD_PROJECT_ID'],
       credentials: ENV['MAP_GOSAPI_GOOGLE_CLOUD_KEYSTORE']
     )
-    @bucket = @storage.bucket 'filestore.gosapi.by'
+    @bucket = @storage.bucket(Rails.env.production? ? 'storage.gosapi.by' : 'test-storage.gosapi.by')
   end
 
   attr_reader :bucket

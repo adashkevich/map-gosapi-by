@@ -5,3 +5,10 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+
+Item.all.each do |item|
+  photos = Photo.where item_id: item.id
+  item.photos = photos
+  item.save!
+end

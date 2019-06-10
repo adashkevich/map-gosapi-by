@@ -21,6 +21,7 @@
             crossorigin="anonymous"></script>
     <script src="https://api-maps.yandex.ru/2.1/?apikey=c09a03a4-45fb-4e99-b484-d6a9ef787bc8&lang=ru_RU"
             type="text/javascript"></script>
+    <script src="javascripts/url.js"></script>
     <script src="javascripts/json-forms.js"></script>
     <script src="javascripts/dropzone.js"></script>
     <script src="javascripts/service.js"></script>
@@ -31,7 +32,7 @@
 
     <script>
         // Variables
-        var endpoint = 'http://35.204.172.229:3002'; // http://35.204.172.229:3002 http://localhost:3000
+        var endpoint = 'http://localhost:3000'; // http://35.204.172.229:3002 http://localhost:3000
     </script>
 </head>
 
@@ -48,8 +49,8 @@
             <li class="nav-item">
                 <a class="nav-link" href="map.html">Карта</a>
             </li>
-            <li class="nav-item active">
-                <a class="nav-link" href="#">Добавить объект<span class="sr-only">(current)</span></a>
+            <li class="nav-item">
+                <a class="nav-link" href="add_item.html">Добавить объект</a>
             </li>
         </ul>
     </div>
@@ -57,11 +58,16 @@
 
 
 <div class="row justify-content-md-center">
-    <div class="col-lg-8">
+    <div class="modal-backdrop fade show" id="loadingBar" style="z-index: 1025;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
 
+    <div class="col-lg-8">
         <form id="newItemForm" class="wizard-step" novalidate>
             <input type="hidden" name="item_type" value="border" id="typeInput">
-            <h3>Добавить бордюр</h3>
+            <h3>Изменить бордюр</h3>
 
             <div class="form-group">
                 <label for="map">Местоположение</label>
@@ -74,17 +80,29 @@
             </div>
 
             <div class="form-group">
-                <label>Фото</label>
-
-                <div id="photosUpload">
-                    <div class="dz-default dz-message"><span>Нажмите сюда для загрузки фото</span></div>
-                </div>
-            </div>
-
-            <div class="form-group">
                 <label for="borderHeightInput">Примерная высота(см)</label>
                 <input type="number" class="form-control" id="borderHeightInput" min="0" max="40" name="height"
                        required>
+            </div>
+
+            <label>Фото</label>
+            <table class="table table-hover" id="photoLinkTable">
+                <tbody>
+                <tr>
+                    <td scope="row">
+                        <input type="text" class="form-control" min="0" max="100" name="photo_link">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="addPhotoLinkBtn">Добавить</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="form-group">
+                <div id="photosUpload">
+                    <div class="dz-default dz-message"><span>Нажмите сюда для загрузки фото</span></div>
+                </div>
             </div>
 
         </form>
@@ -93,38 +111,99 @@
         </div>
 
         <form style="margin: 16px auto 20px;">
-            <button type="button" class="btn btn-outline-primary" id="submitBtn">Добавить</button>
+            <button type="button" class="btn btn-outline-primary" id="submitBtn">Сохранить</button>
+            <button type="button" class="btn btn-outline-danger" id="deleteBtn">Удалить</button>
         </form>
     </div>
 </div>
 
 <script type="text/javascript">
 
-    function cleanForm() {
-        $('#borderHeightInput').val('');
-        myMap.geoObjects.removeAll();
-        $('#photosUpload').get(0).dropzone.removeAllFiles(true);
+    var PHOTO_LINK_TMPL = '<tr class="photo-link-row">\n' +
+        '                    <td scope="row"><a href="{{photo_link}}" target="_blank">{{photo_link}}</a></td>\n' +
+        '                    <td>\n' +
+        '                        <button type="button" class="btn btn-outline-danger btn-sm delete-photo-btn">Удалить</button>\n' +
+        '                    </td>\n' +
+        '                </tr>';
 
+    function fetchItemData(callback) {
+        $.ajax({
+            method: 'GET',
+            url: endpoint + '/api/v1/items/' + $.url('?id'),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                callback && callback(data);
+            },
+            error: function (error) {
+                alert((error && error.message) || "Ошибка сервера");
+            }
+        });
     }
 
+    function submitDeleteRequest() {
+        $.ajax({
+            method: 'POST',
+            url: endpoint + '/api/v1/change_requests/',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({change_request: {
+                    request_type: 'delete',
+                    item_id: $.url('?id'),
+                    item_type: 'border'
+                }
+            }),
+            success: function () {
+                alert("Запрос на удаление отправлен");
+                // window.location = window.location.href.replace('edit_border.html', 'map.html');
+                window.localStorage.setItem('update', 'true');
+                window.close();
+            },
+            error: function (error) {
+                alert((error && error.message) || "Ошибка сервера");
+            }
+        });
+    }
     function getFormData() {
         return {
             height: $('#borderHeightInput').val(),
             photos_attributes: getPhotos(),
             coordinates: getCoordinates(),
-            item_type: $('#typeInput').val()
+            item_type: $('#typeInput').val(),
+            item_id: $.url('?id')
         }
     }
 
+    function setFormData(item) {
+        $.each(item.photos, function (index, photo) {
+            $('#photoLinkTable tbody').append(PHOTO_LINK_TMPL.replace(/{{photo_link}}/g, photo.url));
+        });
+        $('#borderHeightInput').val(item.height);
+        service.util.parseCoordinates(item).forEach(function (point) {
+            addPlacemark(point);
+            gosApiMap.setCenter(point);
+        });
+    }
+
     function getPhotos() {
-        return $('#photosUpload').get(0).dropzone.getAcceptedFiles().map(function (doc) {
+        var uploadedPhoto = $('#photosUpload').get(0).dropzone.getAcceptedFiles().map(function (doc) {
             return {url: doc.xhr.responseText, name: doc.name, size: doc.size};
         });
+        var photoLinks = $('#photoLinkTable .photo-link-row').map(function (index, el) {
+            const photoLink = $(el).find('a').text();
+            return {
+                url: photoLink,
+                name: service.util.getFileName(photoLink),
+                size: 0
+            };
+        });
+        return $.merge(uploadedPhoto, photoLinks);
     }
 
     function getCoordinates() {
         var coordinates = [];
-        ymaps.geoQuery(myMap.geoObjects).each(function (geoObject) {
+        ymaps.geoQuery(gosApiMap.geoObjects).each(function (geoObject) {
             coordinates.push(geoObject.geometry.getBounds()[0]);
         });
         return coordinates;
@@ -141,19 +220,22 @@
         }
 
         formData.coordinates = formData.coordinates.join(';');
+        formData.request_type = 'update';
 
         $.ajax({
             method: 'POST',
-            url: endpoint + '/api/v1/items/',
+            url: endpoint + '/api/v1/change_requests/',
             contentType: 'application/json',
             dataType: 'json',
-            data: JSON.stringify({item: formData}),
+            data: JSON.stringify({change_request: formData}),
             success: function () {
-                alert("Метка успешно добавлена!");
-                cleanForm();
+                alert("Запрос на изменение отправлен!");
+                //window.location = window.location.href.replace('edit_border.html', 'map.html');
+                window.localStorage.setItem('update', 'true');
+                window.close();
             },
-            error: function () {
-                alert("Ошибка сервера");
+            error: function (error) {
+                alert((error && error.message) || "Ошибка сервера");
             }
         });
     }
@@ -161,27 +243,32 @@
     function initMap() {
         $('#map').css('max-height', $('#map').width() + 'px');
 
-        myMap = new ymaps.Map("map", {
+        gosApiMap = new ymaps.Map("map", {
             center: [52.435470, 31.007678],
             zoom: 14, // от 0 (весь мир) до 19.
             controls: ['zoomControl', 'searchControl', 'fullscreenControl'] //'typeSelector',
         });
 
-        myMap.events.add(['click'], function (e) {
-            var placemark = new ymaps.Placemark(e.get('coords'), {}, {
-                preset: 'islands#circleIcon',
-                iconColor: 'gray'
-            });
-            placemark.events.add(['click'], function () {
-                myMap.geoObjects.remove(placemark);
-            });
-
-            myMap.geoObjects.add(placemark);
+        gosApiMap.events.add(['click'], function (e) {
+            //gosApiMap.geoObjects.removeAll();
+            addPlacemark(e.get('coords'));
         });
     }
 
+    function addPlacemark(coordinates) {
+        const placemark = new ymaps.Placemark(coordinates, {}, {
+            preset: 'islands#circleIcon',
+            iconColor: 'gray'
+        });
+        placemark.events.add(['click'], function () {
+            gosApiMap.geoObjects.remove(placemark);
+        });
+
+        gosApiMap.geoObjects.add(placemark);
+    }
+
     function init() {
-        ymaps.ready(initMap);
+        initMap();
         $('#photosUpload').dropzone({url: endpoint + '/api/v1/photos'}).addClass('dropzone');
     }
 
@@ -189,11 +276,33 @@
         $('#submitBtn').click(function () {
             submitForm();
         });
+
+        $('#deleteBtn').click(function () {
+            submitDeleteRequest();
+        });
+
+        $('#addPhotoLinkBtn').click(function () {
+            var photoLink = $('input[name="photo_link"]').val().trim();
+            if (photoLink.length) {
+                $('#photoLinkTable tbody').append(PHOTO_LINK_TMPL.replace(/{{photo_link}}/g, photoLink));
+                $('input[name="photo_link"]').val('');
+            }
+        });
+
+        $(document).on('click', '#photoLinkTable .delete-photo-btn', function () {
+            $(this).closest('tr').remove();
+        });
     }
 
     $(function () {
-        init();
-        hook();
+        ymaps.ready(function () {
+            init();
+            hook();
+            fetchItemData(function (data) {
+                $('#loadingBar').hide();
+                setFormData(data);
+            });
+        });
     });
 </script>
 

@@ -48,6 +48,14 @@
         // Variables
         var endpoint = 'http://localhost:3000'; // http://35.204.172.229:3002 http://localhost:3000
     </script>
+    <style>
+        .old-value {
+            text-decoration: line-through;
+        }
+        .new-value {
+            font-weight: bolder;
+        }
+    </style>
 </head>
 
 <body class="container gosapi">
@@ -94,16 +102,45 @@
         GREEN: '#56DB40',
         BLUE: '#1E98FF',
         GRAY: '#A9A9A9',
-    }, objectManager, gosApiMap, dataItems;
+    },  dataItems, objectManager, gosApiMap;
 
-    //_id = 1000;
+    function accept(id) {
+        $.ajax({
+            method: 'GET',
+            url: endpoint + '/api/v1/change_requests/accept?id=' + id,
+            dataType: 'json',
+            cache: false,
+            success: function (data) {
+                updateMapData()
+            },
+            error: function () {
+                alert("Ошибка сервера");
+            }
+        });
+    }
+
+    function decline(id) {
+        $.ajax({
+            method: 'GET',
+            url: endpoint + '/api/v1/change_requests/decline?id=' + id,
+            dataType: 'json',
+            cache: false,
+            success: function () {
+                objectManager.removeAll();
+                updateMapData()
+
+            },
+            error: function () {
+                alert("Ошибка сервера");
+            }
+        });
+    }
 
     function getColor(item) {
-        if (item.lock) {
-            return color.GRAY;
-        }
         if (!item.processed) {
             return color.BLUE;
+        } else if (item.lock) {
+            return color.GRAY;
         } else if (item.height <= 3) {
             return color.GREEN;
         } else if (item.height <= 6) {
@@ -112,20 +149,27 @@
         return color.RED;
     }
 
-    function buildMarker(point, item) {
-        switch (item.item_type) {
+    function buildMarker(point, changeRequest) {
+        switch (changeRequest.item.item_type) {
             case 'border':
-                return buildBorderMarker(point, item);
-            case 'tree':
-                return buildTreeMarker(point, item);
+                if(changeRequest.request_type === 'update') {
+                    return buildBorderUpdateMarker(point, changeRequest);
+                } else if (changeRequest.request_type === 'delete') {
+                    return buildBorderDeleteMarker(point, changeRequest);
+                }
+            // case 'tree': return buildTreeMarker(point, item);
         }
     }
 
-    function buildBorderMarker(point, item) {
+    function buildBorderDeleteMarker(point, changeRequest) {
         var layout = ymaps.templateLayoutFactory.createClass(
-            '<div class="item map-item">' +
-            '<h3>Бордюр{% if !properties.lock %} <a href="edit_border.html?id={{properties.id}}" target="_blank"><i class="fas fa-edit edit-btn"></i></a>{% endif %}</h3>' +
-            '<p class="p1">Высота {{properties.height}}см</p>' +
+            '<div class="item map-item" changeRequestID="{{properties.id}}">' +
+            '<h3>Бордюр</h3>' +
+            '<div style="padding-bottom: 5px;">' +
+            '<a role="button" href="#" onclick="accept({{properties.id}}, )" class="btn btn-sm btn-outline-danger">Удалить</a>  ' +
+            '<a role="button" href="#" onclick="decline({{properties.id}})" class="btn btn-sm btn-outline-primary">Отклонить</a>' +
+            '</div>' +
+            '<p class="p1">Высота {{properties.height}} см</p>' +
             '{% if properties.problemID %}' +
             '<p>Заявка: <a href="http://115.бел/{{properties.problemHref}}" target="_blank">{{properties.problemID}}</a></p>' +
             '{% endif %}' +
@@ -144,7 +188,7 @@
                     layout.superclass.build.call(this);
 
                     $('.item-more-photo').click(function () {
-                        blueimp.Gallery(item.photos.map(function (photo) {
+                        blueimp.Gallery(changeRequest.photos.map(function (photo) {
                             return photo.url;
                         }));
                     });
@@ -153,47 +197,62 @@
 
         return {
             type: 'Feature',
-            id: item.id,
+            id: changeRequest.id,
             geometry: {
                 type: 'Point',
                 coordinates: point
             },
             properties: {
-                id: item.id,
-                height: item.height,
-                coverImg: getCoverImg(item.photos),
-                openPhotoLabel: getOpenPhotoLabel(item.photos),
-                photos: item.photos,
-                problemID: item.problem_id,
-                problemHref: item.problem_href,
-                problemStatus: getStatus(item.problem_status),
-                problemAnswer: item.problem_answer,
-                type: item.item_type,
-                lock: item.lock
+                id: changeRequest.id,
+                item_id: changeRequest.item.id,
+                height: changeRequest.item.height,
+                coverImg: getCoverImg(changeRequest.photos),
+                openPhotoLabel: getOpenPhotoLabel(changeRequest.photos),
+                photos: changeRequest.photos,
+                problemID: changeRequest.item.problem_id,
+                problemHref: changeRequest.item.problem_href,
+                problemStatus: getStatus(changeRequest.item.problem_status),
+                problemAnswer: changeRequest.item.problem_answer,
+                type: changeRequest.item.item_type,
+                endpoint: endpoint
             },
             options: {
                 preset: 'islands#circleIcon',
-                iconColor: getColor(item),
+                iconColor: getColor(changeRequest.item),
                 balloonContentLayout: layout,
                 hideIconOnBalloonOpen: false
             }
         };
     }
 
-    function buildTreeMarker(point, item) {
+    function buildBorderUpdateMarker(point, changeRequest) {
         var layout = ymaps.templateLayoutFactory.createClass(
-            '<div class="item map-item">' +
-            '<h3>Саженцы</h3>' +
-            '<p class="p1">Количество {{properties.count}} шт</p>' +
-            '<p>Дата посадки {{properties.plantDate}}</p>' +
+            '<div class="item map-item" changeRequestID="{{properties.id}}">' +
+            '<h3>Бордюр</h3>' +
+            '<div style="padding-bottom: 5px;">' +
+                '<a role="button" href="#" onclick="accept({{properties.id}}, )" class="btn btn-sm btn-outline-primary">Принять</a>  ' +
+                '<a role="button" href="#" onclick="decline({{properties.id}})" class="btn btn-sm btn-outline-primary">Отклонить</a>' +
+            '</div>' +
+            '<p class="p1">Высота <span class="old-value">{{properties.height}}</span> <span class="new-value">{{properties.new_height}}</span> см</p>' +
+            '{% if properties.problemID %}' +
+            '<p>Заявка: <a href="http://115.бел/{{properties.problemHref}}" target="_blank">{{properties.problemID}}</a></p>' +
+            '{% endif %}' +
+            '{% if properties.problemStatus %}' +
+            '<p>Статус: {{properties.problemStatus}}</p>' +
+            '{% endif %}' +
+            '{% if properties.problemAnswer %}' +
+            '<p>Ответ: {{properties.problemAnswer}}</p>' +
+            '{% endif %}' +
             '<img src="{{properties.coverImg}}">' +
+            '{% if properties.photos.length %}' +
             '<div class="item-more-photo">{{properties.openPhotoLabel}}</div>' +
+            '{% endif %}' +
             '</div>', {
                 build: function () {
                     layout.superclass.build.call(this);
 
                     $('.item-more-photo').click(function () {
-                        blueimp.Gallery(item.photos.map(function (photo) {
+                        blueimp.Gallery(changeRequest.photos.map(function (photo) {
                             return photo.url;
                         }));
                     });
@@ -202,26 +261,39 @@
 
         return {
             type: 'Feature',
-            id: item.id,
+            id: changeRequest.item.id,
             geometry: {
                 type: 'Point',
                 coordinates: point
             },
             properties: {
-                coverImg: getCoverImg(item.photos),
-                openPhotoLabel: getOpenPhotoLabel(item.photos),
-                photos: item.photos,
-                type: item.item_type,
-                count: item.count,
-                plantDate: item.plant_date,
-                iconContent: item.count,
+                id: changeRequest.id,
+                item_id: changeRequest.item.id,
+                height: changeRequest.item.height || "  ",
+                new_height: changeRequest.height,
+                coverImg: getCoverImg(changeRequest.photos),
+                openPhotoLabel: getOpenPhotoLabel(changeRequest.photos),
+                photos: changeRequest.photos,
+                problemID: changeRequest.item.problem_id,
+                problemHref: changeRequest.item.problem_href,
+                problemStatus: getStatus(changeRequest.item.problem_status),
+                problemAnswer: changeRequest.item.problem_answer,
+                type: changeRequest.item.item_type,
+                endpoint: endpoint
             },
             options: {
-                iconColor: getColor(item),
+                preset: 'islands#circleIcon',
+                iconColor: getColor(changeRequest.item),
                 balloonContentLayout: layout,
-                hideIconOnBalloonOpen: false,
+                hideIconOnBalloonOpen: false
             }
         };
+    }
+
+    function getFilterFunction(type) {
+        return function (obj) {
+            return type === obj.properties.type;
+        }
     }
 
     function getStatus(status) {
@@ -251,35 +323,29 @@
         return photos[0].url;
     }
 
-    function getFilterFunction(type) {
-        return function (obj) {
-            return type === obj.properties.type;
-        }
-    }
-
     function initMap() {
         objectManager = new ymaps.ObjectManager();
-        dataItems = [new ymaps.control.ListBoxItem({data: {content: 'Бордюры', type: 'border'}}),
-            new ymaps.control.ListBoxItem({data: {content: 'Саженцы', type: 'tree'}})],
-            separatorCfg = {
-                options: {type: 'separator'}
-            };
-        var dataControl = new ymaps.control.ListBox({
-            data: {
-                content: 'Отображаемые данные'
-            },
-            items: [
-                dataItems[0],
-                new ymaps.control.ListBoxItem(separatorCfg),
-                dataItems[1],
-            ]
-        });
-
         gosApiMap = new ymaps.Map("map", {
             center: [52.435470, 31.007678],
             zoom: 14, // от 0 (весь мир) до 19.
             controls: ['zoomControl', 'fullscreenControl'] //'typeSelector',
         });
+        dataItems = [new ymaps.control.ListBoxItem({data: {content: 'Бордюры', type: 'border'}}),
+            new ymaps.control.ListBoxItem({data: {content: 'Саженцы', type: 'tree'}})];
+
+        let separatorCfg = {
+                options: {type: 'separator'}
+            },
+            dataControl = new ymaps.control.ListBox({
+                data: {
+                    content: 'Отображаемые данные'
+                },
+                items: [
+                    dataItems[0],
+                    new ymaps.control.ListBoxItem(separatorCfg),
+                    dataItems[1],
+                ]
+            });
 
         gosApiMap.controls.add(dataControl, {
             floatIndex: 0
@@ -306,33 +372,26 @@
                 }
             });
         });
-
         updateMapData();
-
-        setInterval(function () {
-            if (window.localStorage.getItem('update') === 'true') {
-                updateMapData();
-            }
-        }, 5000);
+        objectManager.objects.events.add(['mouseenter'], function (e) {
+            console.log(e)
+        });
     }
 
     function updateMapData() {
-        window.localStorage.setItem('update', 'false');
         $.ajax({
             method: 'GET',
-            url: endpoint + '/api/v1/items/',
+            url: endpoint + '/api/v1/change_requests/',
             dataType: 'json',
             cache: false,
             success: function (data) {
                 objectManager.removeAll();
-                setTimeout(function () {
-                    data.forEach(function (item) {
-                        service.util.parseCoordinates(item).forEach(function (point) {
-                            objectManager.add(buildMarker(point, item));
-                        });
+                data.forEach(function (changeRequest) {
+                    service.util.parseCoordinates(changeRequest).forEach(function (point) {
+                        objectManager.add(buildMarker(point, changeRequest));
                     });
-                    dataItems[0].select();
-                }, 0);
+                });
+                dataItems[0].select();
             },
             error: function () {
                 alert("Ошибка сервера");
@@ -341,6 +400,7 @@
     }
 
     ymaps.ready(initMap);
+
 </script>
 <script src="javascripts/blueimp-gallery/blueimp-gallery.min.js"></script>
 </body>

@@ -3,14 +3,14 @@ class ItemsController < ApplicationController
 
   # GET /items
   def index
-    @items = Item.eager_load(:photos).all
+    @items = Item.eager_load(:photos).where(deleted: false)
 
-    render json: @items, include: { photos: { only: :url } }, except: %i[created_at updated_at]
+    render json: @items, include: { photos: { only: :url } }, except: %i[created_at updated_at parent_id deleted count]
   end
 
   # GET /items/1
   def show
-    render json: @item
+    render json: @item, include: { photos: { only: :url } }, except: %i[created_at updated_at]
   end
 
   # POST /items
@@ -41,7 +41,7 @@ class ItemsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_item
-      @item = Item.find(params[:id])
+      @item = Item.eager_load(:photos).find(params[:id])
     end
 
     # Only allow a trusted parameter "white list" through.

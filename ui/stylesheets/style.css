@@ -166,3 +166,22 @@ ul.help-info li {
     color: gray;
     cursor: pointer;
 }
+
+#loadingBar .spinner-border {
+    width: 3rem; height: 3rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+#photoLinkTable input.form-control {
+    height: calc(1em + .75rem + 2px);
+}
+
+#photoLinkTable thead tr, #photoLinkTable thead td, #photoLinkTable tbody tr:first-child td {
+    border-top: none;
+}
+
+#photoLinkTable thead td {
+    padding-left: 0;
+}

@@ -3,7 +3,7 @@ service.util = (function () {
         isFunction: function (functionToCheck) {
             return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]';
         },
-        mute: function (e) {
+        mute: function (event) {
             event.preventDefault();
             event.stopPropagation();
         },
@@ -12,6 +12,18 @@ service.util = (function () {
             $(form).addClass('was-validated');
             return is_valid;
         },
+        parseCoordinates: function (item) {
+            const results = [];
+            item.coordinates.split(";").forEach(function (coordinateStr) {
+                results.push(coordinateStr.split(",").map(function (pointStr) {
+                    return parseFloat(pointStr);
+                }));
+            });
+            return results;
+        },
+        getFileName: function (url) {
+            return url.substring(url.lastIndexOf('/') + 1);
+        }
     }
 })();
 

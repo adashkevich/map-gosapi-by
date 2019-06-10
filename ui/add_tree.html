@@ -117,7 +117,7 @@
     function cleanForm() {
         $('#countInput').val('');
         $('#plantDatePicker').val('');
-        myMap.geoObjects.removeAll();
+        gosApiMap.geoObjects.removeAll();
         $('#photosUpload').get(0).dropzone.removeAllFiles(true);
 
     }
@@ -140,7 +140,7 @@
 
     function getCoordinates() {
         var coordinates = [];
-        ymaps.geoQuery(myMap.geoObjects).each(function (geoObject) {
+        ymaps.geoQuery(gosApiMap.geoObjects).each(function (geoObject) {
             coordinates.push(geoObject.geometry.getBounds()[0]);
         });
         return coordinates;
@@ -177,21 +177,21 @@
     function initMap() {
         $('#map').css('max-height', $('#map').width() + 'px');
 
-        myMap = new ymaps.Map("map", {
+        gosApiMap = new ymaps.Map("map", {
             center: [52.435470, 31.007678],
             zoom: 14, // от 0 (весь мир) до 19.
             controls: ['zoomControl', 'searchControl', 'fullscreenControl'] //'typeSelector',
         });
 
         var placemark;
-        myMap.events.add(['click'], function (e) {
-            placemark && myMap.geoObjects.remove(placemark);
+        gosApiMap.events.add(['click'], function (e) {
+            placemark && gosApiMap.geoObjects.remove(placemark);
             placemark = new ymaps.Placemark(e.get('coords'), {}, {
                 preset: 'islands#circleIcon',
                 iconColor: 'green'
             });
 
-            myMap.geoObjects.add(placemark);
+            gosApiMap.geoObjects.add(placemark);
         });
     }
 

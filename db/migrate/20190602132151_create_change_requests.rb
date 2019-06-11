@@ -4,7 +4,7 @@ class CreateChangeRequests < ActiveRecord::Migration[5.1]
       t.string :request_type
       t.string :coordinates
       t.integer :height
-      t.boolean :accept_request
+      t.boolean :accept
       t.belongs_to :item
 
       t.timestamps

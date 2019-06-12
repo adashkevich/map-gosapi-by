@@ -101,8 +101,7 @@
     function getColor(item) {
         if (item.lock) {
             return color.GRAY;
-        }
-        if (!item.processed) {
+        } else if (!item.height) {
             return color.BLUE;
         } else if (item.height <= 3) {
             return color.GREEN;

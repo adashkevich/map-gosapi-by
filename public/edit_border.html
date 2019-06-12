@@ -80,7 +80,7 @@
             </div>
 
             <div class="form-group">
-                <label for="borderHeightInput">Примерная высота(см)</label>
+                <label for="borderHeightInput" required="false">Примерная высота(см)</label>
                 <input type="number" class="form-control" id="borderHeightInput" min="0" max="40" name="height"
                        required>
             </div>
@@ -210,7 +210,7 @@
     }
 
     function validateFormData(formData) {
-        return formData.height !== '' && formData.photos_attributes.length && formData.coordinates.length;
+        return formData.photos_attributes.length && formData.coordinates.length; //formData.height !== '' &&
     }
     function submitForm() {
         var formData = getFormData();

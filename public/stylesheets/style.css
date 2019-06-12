@@ -185,3 +185,7 @@ ul.help-info li {
 #photoLinkTable thead td {
     padding-left: 0;
 }
+
+label[required="false"]:after {
+    content: '';
+}

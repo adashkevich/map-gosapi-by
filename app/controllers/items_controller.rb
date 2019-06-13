@@ -5,7 +5,7 @@ class ItemsController < ApplicationController
   def index
     @items = Item.eager_load(:photos).where(deleted: false)
 
-    render json: @items, include: { photos: { only: :url } }, except: %i[created_at updated_at parent_id deleted count]
+    render json: @items, include: { photos: { only: :url } }, except: %i[created_at updated_at parent_id deleted]
   end
 
   # GET /items/1

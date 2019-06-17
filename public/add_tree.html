@@ -166,6 +166,7 @@
             data: JSON.stringify({item: formData}),
             success: function () {
                 alert("Метка успешно добавлена!");
+                window.localStorage.setItem('update', 'true');
                 cleanForm();
             },
             error: function () {

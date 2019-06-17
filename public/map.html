@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Карта бордюров Гомеля</title>
-    <meta name="description" content="Мы пытаемся собрать все бордюры препятствующие свободному передвижению граждан на одной карте. Редактируй отметки, указывай высоту, делай твой город лучше."/>
+    <meta name="description" content="Высокие бордюры делают невозможным передвижение инвалидов-колясочников, затрудняют передвижение маломобильных граждан, препятствуют использованию велосипедов. Для определения проблемных мест и оценки времени необходимого для их устранения и была создана карта бордюров."/>
 
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
@@ -46,7 +46,7 @@
 
     <script>
         // Variables
-        var endpoint = 'http://localhost:3000'; // http://35.204.172.229:3002 http://localhost:3000
+        var endpoint = 'http://35.204.172.229:3002'; // http://35.204.172.229:3002 http://localhost:3000
     </script>
 </head>
 
@@ -101,7 +101,7 @@
     function getColor(item) {
         if (item.lock) {
             return color.GRAY;
-        } else if (!item.height) {
+        } else if (!item.height && item.height !== 0) {
             return color.BLUE;
         } else if (item.height <= 3) {
             return color.GREEN;

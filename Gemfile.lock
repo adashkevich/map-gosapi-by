@@ -99,6 +99,8 @@ GEM
     multi_json (1.13.1)
     multipart-post (2.0.0)
     nio4r (2.3.1)
+    nokogiri (1.10.1)
+      mini_portile2 (~> 2.4.0)
     nokogiri (1.10.1-x86-mingw32)
       mini_portile2 (~> 2.4.0)
     os (1.0.0)
@@ -108,9 +110,10 @@ GEM
       mime-types
       mimemagic (~> 0.3.0)
       terrapin (~> 0.6.0)
+    pg (1.1.4)
     pg (1.1.4-x86-mingw32)
     public_suffix (3.0.3)
-    puma (3.12.0)
+    puma (3.12.3)
     rack (2.0.6)
     rack-cors (1.0.2)
     rack-test (1.1.0)
@@ -170,6 +173,7 @@ GEM
     websocket-extensions (0.1.3)
 
 PLATFORMS
+  ruby
   x86-mingw32
 
 DEPENDENCIES
@@ -177,7 +181,7 @@ DEPENDENCIES
   google-cloud-storage
   paperclip (~> 6.0.0)
   pg (>= 0.18, < 2.0)
-  puma (~> 3.7)
+  puma (~> 3.12)
   rack-cors
   rails (~> 5.1.6, >= 5.1.6.2)
   tzinfo-data
